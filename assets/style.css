@@ -134,3 +134,31 @@ table.t{width:100%;border-collapse:collapse;font-size:.95rem}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 @keyframes shimmer{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== منشئ الاختبارات ===== */
+textarea{width:100%;padding:10px 14px;border:2px solid var(--line);border-radius:12px;font-size:1rem;margin:6px 0;font-family:inherit;resize:vertical;background:#fff;color:var(--black);transition:border-color .2s,box-shadow .2s}
+textarea:focus{outline:0;border-color:var(--green);box-shadow:0 0 0 4px rgba(23,172,75,.15)}
+input[type=radio],input[type=file]{width:auto;margin:0;padding:0;box-shadow:none}
+input[type=file]{padding:8px;border:2px dashed var(--line);border-radius:12px;background:#fafcfa;margin:6px 0}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tabs button{background:#fff;color:var(--black);border:2px solid var(--line);box-shadow:none}
+.tabs button.on{background:var(--green);color:#fff;border-color:var(--green)}
+.qcard{border:2px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;background:#fcfdfc;animation:rise .3s ease both}
+.qcard:focus-within{border-color:var(--green)}
+.orow{display:flex;gap:8px;align-items:center;margin:4px 0}
+.orow input[type=text],.orow input:not([type]){margin:0;flex:1}
+.rad{display:flex;align-items:center;gap:6px;font-weight:800;min-width:46px;direction:ltr;cursor:pointer}
+.rad input{accent-color:var(--green);width:20px;height:20px}
+.qimg{max-width:100%;height:auto;display:block;margin:12px auto;border-radius:10px;border:1px solid var(--line)}
+.thumb{display:flex;align-items:center;gap:10px;margin:6px 0}
+.thumb img{max-height:90px;border-radius:8px;border:1px solid var(--line)}
+.pdfwrap{overflow:auto;max-height:520px;border:1px solid var(--line);border-radius:12px;direction:ltr;background:#eee;margin-top:8px}
+.pdfin{position:relative;display:inline-block;touch-action:none;cursor:crosshair}
+.selbox{position:absolute;border:2px dashed var(--red);background:rgba(181,32,46,.14);display:none;pointer-events:none}
+details summary{cursor:pointer;font-weight:700;margin:8px 0}
+.warn{background:var(--amber-l);border:1px solid #f1dc9a;border-radius:12px;padding:10px 14px;margin:8px 0;font-size:.92rem}
+.tabs button.red{background:var(--red);color:#fff;border-color:var(--red)}
+
+.figprev{border:1px dashed var(--line);border-radius:10px;padding:8px;margin:6px 0;background:#fff;overflow:auto;direction:ltr;text-align:center}
+.figprev .fig{width:260px;margin:0 auto}
+.tag{display:inline-block;background:#e8eefb;color:#25458f;border-radius:99px;padding:0 10px;font-size:.78rem;font-weight:700;margin-right:6px}

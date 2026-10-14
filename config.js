@@ -1,6 +1,6 @@
 /* ===== إعدادات الموقع — عدّل هنا فقط ===== */
 window.CFG = {
-  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzKzjEeSh8ciISRXOXFQM5Y7JMaq1Ed1OQezJ0h5xjwjvvi_PX5bjqhQ_kH97-gwlrMiQ/exec",   // ← رابط Google Apps Script الذي ينتهي بـ /exec (اتركه فارغاً للتجربة المحلية)
+  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyGLGY8glSxqD0dxoJUlOdSfBCkUvjbqV_1h9Ei5XJSW883keiBBYJi3LWPfbDi_7Eagw/exec",   // ← رابط Google Apps Script الذي ينتهي بـ /exec (اتركه فارغاً للتجربة المحلية)
   OFFICE: "مكتب الأولمبياد العلمي السوري بدرعا",
   ENGINEER: "المهندس أسامة الصلخدي",
   SUBJECT: "المعلوماتية"

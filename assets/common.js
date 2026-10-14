@@ -11,11 +11,46 @@ const store = {
 
 /* ---------- الاختبارات ---------- */
 const EXAMS = {};
+const ctx = {key:''};                    // مفتاح المشرف (تضعه لوحة التحكم)
+let META = {};                           // id -> {id,title,desc,count,status,static}
 window.registerExam = e => { EXAMS[e.id] = e; };
+/* تنسيق نص السؤال المكتوب من لوحة التحكم: {{نص}} = اتجاه يسار-يمين، **نص** = غامق */
+const fmt = t => esc(t).replace(/\{\{([\s\S]+?)\}\}/g,'<bdi class="ltr">$1</bdi>').replace(/\*\*([\s\S]+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
+/* تنظيف HTML قادم من ملف مستورد: حذف السكربتات والأحداث والروابط الخطرة */
+function clean(html){
+  const doc = new DOMParser().parseFromString('<body>' + (html || '') + '</body>', 'text/html');
+  doc.querySelectorAll('script,iframe,object,embed,link,meta,base,form,input,button,textarea').forEach(n => n.remove());
+  doc.body.querySelectorAll('*').forEach(n => [...n.attributes].forEach(a => {
+    if(/^on/i.test(a.name) || /^\s*javascript:/i.test(a.value)) n.removeAttribute(a.name);
+  }));
+  return doc.body.innerHTML;
+}
+function buildExam(d){
+  return {id:d.id, title:d.title, questions:(d.questions||[]).map(q => {
+    const fig = (q.fig ? clean(q.fig) : '') + (q.img ? `<img class="qimg" src="${esc(q.img)}" alt="شكل السؤال">` : '');
+    return {q:q.h ? clean(q.q) : fmt(q.q), o:q.o, a:q.a, s:q.h ? clean(q.s || '') : fmt(q.s || ''), fig:fig ? () => fig : null};
+  })};
+}
+function setMeta(list){ META = {}; (list||[]).forEach(m => META[m.id] = m); }
+async function loadCatalog(){
+  const st = (window.EXAMS_MANIFEST||[]).map(m => ({...m, static:true, status:'published'}));
+  let dyn = [];
+  if(Net.live()){
+    try{ const r = await Net.exams(); if(r.ok){ dyn = r.exams; store.set('oly_cat', dyn); } }
+    catch(e){ dyn = store.get('oly_cat') || []; }
+  }
+  const all = [...st, ...dyn.filter(d => !st.some(x => x.id === d.id))];
+  setMeta(all); return all;
+}
 function loadExam(id){
   if(EXAMS[id]) return Promise.resolve(EXAMS[id]);
   const m = (window.EXAMS_MANIFEST||[]).find(x => x.id === id);
-  if(!m) return Promise.reject(new Error('اختبار غير معروف'));
+  if(!m){                                 // اختبار محفوظ على الخادم
+    return Net.getExam(id, ctx.key).then(r => {
+      if(!r.ok) throw new Error('اختبار غير موجود');
+      return (EXAMS[id] = buildExam(r.exam));
+    });
+  }
   return new Promise((res, rej) => {
     const s = document.createElement('script');
     s.src = m.file; s.onload = () => EXAMS[id] ? res(EXAMS[id]) : rej(new Error('ملف الاختبار لا يسجّل نفسه'));
@@ -23,7 +58,7 @@ function loadExam(id){
     document.head.appendChild(s);
   });
 }
-const examMeta = id => (window.EXAMS_MANIFEST||[]).find(x => x.id === id) || {id, title:id, count:0};
+const examMeta = id => META[id] || (window.EXAMS_MANIFEST||[]).find(x => x.id === id) || {id, title:id, count:0};
 
 /* ---------- الترتيب: العلامة الأعلى ثم الزمن الأقل ---------- */
 function rankInfo(rows, row){
@@ -61,7 +96,11 @@ const Net = {
   async all(key){
     if(live()) return g({action:'all', key});
     return {ok:true, rows: localRows()};
-  }
+  },
+  async exams(){ return live() ? g({action:'exams'}) : {ok:true, exams:[]}; },
+  async getExam(id, key){ return live() ? g({action:'exam', id, key: key || ''}) : {ok:false}; },
+  async adminExams(key){ return live() ? g({action:'adminexams', key}) : {ok:true, exams:[]}; },
+  async act(body){ return live() ? p(body) : {ok:false, error:'يتطلب ربط الخادم (SCRIPT_URL)'}; }
 };
 
 /* ---------- الترويسة ---------- */
@@ -101,5 +140,5 @@ document.addEventListener('click', e => {
 });
 
 const fmtTime = s => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
-window.OLY = {CFG, LET, esc, store, Net, loadExam, examMeta, rankInfo, brandHTML, initFW, burst, celebrate, fmtTime};
+window.OLY = {CFG, LET, esc, fmt, clean, store, Net, ctx, loadExam, loadCatalog, setMeta, examMeta, rankInfo, brandHTML, initFW, burst, celebrate, fmtTime};
 })();

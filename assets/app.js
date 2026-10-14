@@ -1,9 +1,9 @@
 /* واجهة الطالب: الدخول ← قائمة الاختبارات ← الاختبار ← النتيجة/المراجعة */
 (function(){
-const {CFG, LET, esc, store, Net, loadExam, brandHTML, initFW, burst, celebrate} = OLY;
+const {CFG, LET, esc, store, Net, loadExam, loadCatalog, brandHTML, initFW, burst, celebrate} = OLY;
 document.getElementById('brand').innerHTML = brandHTML(); initFW();
 const $app = document.getElementById('app');
-const MAN = window.EXAMS_MANIFEST || [];
+let MAN = window.EXAMS_MANIFEST || [];   // يُستبدل بالكتالوج (الثابت + المحفوظ على الخادم)
 let STU = store.get('oly_student');     // {reg, name}
 let RES = {};                           // examId -> نتيجة الطالب المسجّلة
 let S = null, EX = null, showSol = false, justFinished = false;
@@ -38,6 +38,7 @@ async function home(){
     <div class="grid"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>`;
   document.getElementById('out').onclick = () => { store.del('oly_student'); STU = null; loginScreen(); };
   let offline = false;
+  MAN = await loadCatalog();
   try{
     const r = await Net.student(STU.reg); RES = {}; (r.results || []).forEach(x => RES[x.exam] = x);
     store.set('oly_res_' + STU.reg, RES);
@@ -46,7 +47,7 @@ async function home(){
 }
 function renderHome(offline){
   const done = MAN.filter(m => RES[m.id]);
-  const avg = done.length ? Math.round(done.reduce((t,m) => t + RES[m.id].score / m.count * 100, 0) / done.length) : 0;
+  const avg = done.length ? Math.round(done.reduce((t,m) => t + RES[m.id].score / (m.count || 1) * 100, 0) / done.length) : 0;
   const cards = MAN.map((m, i) => {
     const r = RES[m.id], st = STU && store.get(stKey(m.id));
     const pend = !r && st && st.done;              // انتهى محلياً ولم تُرسل نتيجته
@@ -86,6 +87,9 @@ async function openExam(id){
   try{ EX = await loadExam(id); }catch(e){ alert('تعذّر تحميل الاختبار، تحقق من الاتصال.'); return home(); }
   const N = EX.questions.length, key = stKey(id), r = RES[id];
   let st = store.get(key);
+  if(st && st.answers.length !== N){                 // عُدِّل الاختبار بعد بدء الطالب
+    st.answers = Array.from({length:N}, (_, i) => st.answers[i] ?? -1); st.idx = Math.min(st.idx, N-1); store.set(key, st);
+  }
   if(r){                                   // مقدَّم مسبقاً: ابنِ الحالة من نتيجة الخادم
     st = {answers: String(r.answers).split('').map(c => LET.indexOf(c)), idx:0, start:0, end:r.seconds*1000, done:true, sent:true};
     while(st.answers.length < N) st.answers.push(-1);
